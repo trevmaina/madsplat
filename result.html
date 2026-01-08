@@ -19,7 +19,7 @@
         </div>
         <div class="nav-menu" id="nav-menu">
           <a href="index.html" class="nav-item">View Gallery</a>
-          <button id="theme-toggle" class="theme-btn">Theme</button>
+          <button id="theme-toggle" class="theme-btn">✦ Theme</button>
         </div>
       </div>
     </nav>
@@ -87,6 +87,8 @@
       document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(window.location.search);
         const status = params.get("status");
+
+        // Paystack returns data in a different structure than IntaSend
         const lastTx = JSON.parse(localStorage.getItem("lastTx") || "{}");
 
         const title = document.getElementById("status-title");
@@ -101,9 +103,13 @@
           title.innerText = "Payment Successful";
           msg.innerText =
             "The transaction was processed. Your artwork selection is now being prepared for you.";
-          if (lastTx.tracking_id) {
+
+          // PAYSTACK FIX: Look for 'reference' or 'trnx_ref' instead of 'tracking_id'
+          const paystackRef = lastTx.reference || lastTx.trnx_ref || "N/A";
+
+          if (paystackRef !== "N/A") {
             refBox.style.display = "block";
-            refId.innerText = lastTx.tracking_id;
+            refId.innerText = paystackRef;
           }
         } else {
           icon.innerHTML = "✘";

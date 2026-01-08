@@ -1,6 +1,6 @@
 /**
  * madsplat | IntaSend API Service
- */
+ 
 const IntaSendService = {
   // Replace with your actual IntaSend Publishable Test Key
   publicKey: "ISPubKey_test_your_key_here",
@@ -29,3 +29,4 @@ const IntaSendService = {
       .on("IN-PROGRESS", () => console.log("Payment in progress..."));
   },
 };
+*/

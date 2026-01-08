@@ -71,14 +71,12 @@ const artworks = [
   },
 ];
 
-// GALLERY LOGIC (Corrected to handle category switching)
+// GALLERY LOGIC
 function renderGallery(filter = "All") {
   const grid = document.getElementById("gallery-grid");
   if (!grid) return;
-
   grid.innerHTML = "";
 
-  // Filter logic
   const filtered =
     filter === "All" ? artworks : artworks.filter((a) => a.category === filter);
 
@@ -98,14 +96,6 @@ function renderGallery(filter = "All") {
                 </div>
             </div>`;
   });
-
-  // Update active tab styling
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.classList.toggle(
-      "active",
-      btn.getAttribute("onclick").includes(`'${filter}'`)
-    );
-  });
 }
 
 function buyNow(id) {
@@ -118,53 +108,128 @@ function buyNow(id) {
 function login() {
   const u = document.getElementById("user").value;
   const p = document.getElementById("pass").value;
-  if (u === "admin" && p === "madsplat2026") {
+
+  // UPDATED CREDENTIALS
+  if (u === "admin" && p === "csvadmin96!") {
     localStorage.setItem("madsplat_auth", "true");
     location.reload();
-  } else alert("Denied");
+  } else {
+    alert("Denied");
+  }
 }
 
-function processIntaSend(type) {
-  const amt = parseFloat(document.getElementById("amount").value);
-  if (!amt || amt <= 0) return alert("Invalid amount");
-
-  let history = JSON.parse(localStorage.getItem("madsplat_history") || "[]");
-  const tx = {
-    id: "MS-" + Date.now(),
-    type,
-    amount: amt,
-    date: new Date().toLocaleString(),
-    status: "Completed",
-  };
-  history.unshift(tx);
-  localStorage.setItem("madsplat_history", JSON.stringify(history));
-
-  let bal = parseFloat(localStorage.getItem("madsplat_balance") || "0");
-  localStorage.setItem(
-    "madsplat_balance",
-    type === "DEPOSIT" ? bal + amt : bal - amt
-  );
-  location.reload();
+function logout() {
+  localStorage.removeItem("madsplat_auth");
+  window.location.href = "../index.html";
 }
 
 // INIT
 document.addEventListener("DOMContentLoaded", () => {
-  renderGallery("All");
-  if (
-    localStorage.getItem("madsplat_auth") === "true" &&
-    document.getElementById("dashboard")
-  ) {
-    document.getElementById("login-form").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("balance").innerText = `KES ${parseFloat(
-      localStorage.getItem("madsplat_balance") || "0"
-    ).toLocaleString()}`;
-    const hist = JSON.parse(localStorage.getItem("madsplat_history") || "[]");
-    document.getElementById("history").innerHTML = hist
-      .map(
-        (t) =>
-          `<li style="list-style:none; border-bottom:1px solid #333; padding:10px 0;">${t.type}: KES ${t.amount} (${t.status})</li>`
-      )
-      .join("");
+  if (typeof renderGallery === "function") {
+    const params = new URLSearchParams(window.location.search);
+    renderGallery(params.get("filter") || "All");
+  }
+
+  const loginForm = document.getElementById("login-form");
+  const adminContent = document.getElementById("admin-content");
+
+  if (localStorage.getItem("madsplat_auth") === "true") {
+    if (loginForm) loginForm.style.display = "none";
+    if (adminContent) {
+      adminContent.style.display = "block";
+      document.getElementById("dashboard").style.display = "block";
+      loadAdminData();
+    }
+  } else {
+    if (loginForm) loginForm.style.display = "block";
+    if (adminContent) adminContent.style.display = "none";
   }
 });
+
+function loadAdminData() {
+  const balanceEl = document.getElementById("balance");
+  const historyEl = document.getElementById("history");
+
+  // 1. Calculate balance based on successful transactions
+  // For now, we simulate this by checking if a lastTx exists
+  const lastTx = JSON.parse(localStorage.getItem("lastTx") || "null");
+  let currentBal = parseFloat(localStorage.getItem("madsplat_balance") || "0");
+
+  if (lastTx && !localStorage.getItem("tx_processed")) {
+    // If there is a new transaction from Paystack, add it to balance
+    const art = JSON.parse(localStorage.getItem("selectedArtwork"));
+    if (art) {
+      currentBal += art.price;
+      localStorage.setItem("madsplat_balance", currentBal);
+      localStorage.setItem("tx_processed", "true"); // Prevent double counting on refresh
+    }
+  }
+
+  if (balanceEl) {
+    balanceEl.innerText = `KES ${currentBal.toLocaleString()}`;
+  }
+
+  // 2. Display Paystack History
+  if (historyEl) {
+    if (lastTx) {
+      // Show the Paystack reference as requested
+      historyEl.innerHTML = `
+        <li style="list-style:none; border:1px solid var(--divider); padding:15px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="color:var(--cta);">SUCCESS</strong><br>
+              <small style="color:var(--text-sub);">Ref: ${
+                lastTx.reference
+              }</small>
+            </div>
+            <div style="text-align:right;">
+              <strong>KES ${currentBal.toLocaleString()}</strong><br>
+              <small style="color:var(--text-sub);">${new Date().toLocaleDateString()}</small>
+            </div>
+          </div>
+        </li>`;
+    } else {
+      historyEl.innerHTML = `<p style="color:var(--text-sub); text-align:center;">No recent transactions found.</p>`;
+    }
+  }
+}
+
+// New function to save account changes locally
+function saveAccountSettings() {
+  const name = document.getElementById("studio-name").value;
+  const email = document.getElementById("studio-email").value;
+  localStorage.setItem("studio_info", JSON.stringify({ name, email }));
+  alert("Account settings updated locally!");
+}
+
+// TAB TOGGLE
+document.querySelectorAll(".admin-tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    const target = button.getAttribute("data-target");
+    document.querySelectorAll(".tab-content").forEach((section) => {
+      section.style.display = "none";
+    });
+    document.getElementById(target).style.display = "block";
+  });
+});
+
+/**
+ * Admin-specific Deposit via Paystack
+ */
+function adminDeposit() {
+  const amt = parseFloat(document.getElementById("admin-deposit-amount").value);
+
+  if (!amt || amt <= 0) {
+    return alert("Please enter a valid amount to deposit.");
+  }
+
+  // Use your admin email for the transaction record
+  const adminEmail = "admin@madsplat.com";
+  const adminPhone = "254000000000";
+
+  // Trigger the Paystack popup
+  console.log(`Initiating admin deposit: KES ${amt}`);
+
+  // Reuse the existing PaymentService from your checkout logic
+  PaymentService.initiatePayment(amt, adminEmail, adminPhone);
+}

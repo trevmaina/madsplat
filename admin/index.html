@@ -19,7 +19,20 @@
         </div>
         <div class="nav-menu" id="nav-menu">
           <a href="../index.html" class="nav-item">View Gallery</a>
-          <button id="theme-toggle" class="theme-btn">Theme</button>
+          <button class="nav-item admin-tab" data-target="dashboard">
+            Transaction History
+          </button>
+          <button class="nav-item admin-tab" data-target="account">
+            Account
+          </button>
+          <button id="theme-toggle" class="theme-btn">✦ Theme</button>
+          <button
+            class="nav-item"
+            onclick="logout()"
+            style="color: var(--accent-alt)"
+          >
+            Log-out
+          </button>
         </div>
       </div>
     </nav>
@@ -32,24 +45,95 @@
         <button onclick="login()">Login</button>
       </div>
 
-      <div id="dashboard" style="display: none">
-        <h2 style="font-family: var(--font-heading)">Studio Control</h2>
-        <div style="background: var(--divider); padding: 20px; margin: 20px 0">
-          <small>Wallet Balance</small>
-          <h1 id="balance" style="margin: 0; color: var(--cta)">KES 0</h1>
-        </div>
-        <input type="number" id="amount" placeholder="KES Amount" />
-        <button onclick="processIntaSend('DEPOSIT')">Deposit</button>
-        <button
-          onclick="processIntaSend('WITHDRAW')"
-          style="background: var(--accent-alt)"
-        >
-          Withdraw
-        </button>
-        <h3 style="margin-top: 2rem; border-bottom: 1px solid var(--divider)">
-          Transaction History
-        </h3>
-        <ul id="history" style="padding: 0"></ul>
+      <div id="admin-content" style="display: none">
+        <section id="dashboard" class="tab-content">
+          <h2 style="font-family: var(--font-heading)">Studio Control</h2>
+          <div
+            style="
+              background: var(--divider);
+              padding: 20px;
+              margin: 20px 0;
+              border-left: 3px solid var(--cta);
+            "
+          >
+            <small>Paystack Wallet Transfer</small>
+            <h1 id="balance" style="margin: 0; color: var(--cta)">KES 0</h1>
+            <p
+              style="font-size: 0.7rem; color: var(--text-sub); margin-top: 5px"
+            >
+              Use this to add testing funds or manual balances to your Paystack
+              account.
+            </p>
+          </div>
+
+          <input
+            type="number"
+            id="admin-deposit-amount"
+            placeholder="Enter KES Amount"
+          />
+          <button onclick="adminDeposit()">Deposit via Paystack</button>
+
+          <h3 style="margin-top: 2rem; border-bottom: 1px solid var(--divider)">
+            Activity Feed
+          </h3>
+          <ul id="history" style="padding: 0"></ul>
+        </section>
+
+        <section id="account" class="tab-content" style="display: none">
+          <h2 style="font-family: var(--font-heading)">Account Settings</h2>
+          <div
+            style="
+              background: var(--divider);
+              padding: 20px;
+              margin-top: 20px;
+              border-left: 3px solid var(--accent-blue);
+            "
+          >
+            <p
+              style="
+                margin: 0 0 10px 0;
+                font-size: 0.8rem;
+                color: var(--text-sub);
+              "
+            >
+              Studio Identity
+            </p>
+            <div style="display: grid; gap: 15px">
+              <div>
+                <label style="font-size: 0.7rem; text-transform: uppercase"
+                  >Studio Name</label
+                >
+                <input
+                  type="text"
+                  id="studio-name"
+                  value="Madsplat Urban Studio"
+                  style="margin-top: 5px"
+                />
+              </div>
+              <div>
+                <label style="font-size: 0.7rem; text-transform: uppercase"
+                  >Payout Email (Paystack)</label
+                >
+                <input
+                  type="email"
+                  id="studio-email"
+                  value="admin@madsplat.com"
+                  style="margin-top: 5px"
+                />
+              </div>
+              <button
+                onclick="saveAccountSettings()"
+                style="
+                  width: auto;
+                  padding: 10px 25px;
+                  background: var(--accent-blue);
+                "
+              >
+                Save Settings
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
