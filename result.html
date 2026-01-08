@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Madsplat | Transaction Status</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <div class="branding">
+          <img src="logo.png" alt="madsplat" class="nav-logo" />
+          <span class="brand-name">madsplat</span>
+        </div>
+        <div class="hamburger" id="hamburger">
+          <span class="bar"></span><span class="bar"></span
+          ><span class="bar"></span>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="index.html" class="nav-item">View Gallery</a>
+          <button id="theme-toggle" class="theme-btn">Theme</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="panel" style="text-align: center; margin-top: 5rem">
+      <div
+        id="status-icon"
+        style="font-size: 5rem; margin-bottom: 1.5rem"
+      ></div>
+      <h2
+        id="status-title"
+        style="
+          font-family: var(--font-heading);
+          text-transform: uppercase;
+          font-size: 2rem;
+        "
+      ></h2>
+      <p
+        id="status-msg"
+        style="
+          color: var(--text-sub);
+          margin-bottom: 2.5rem;
+          max-width: 400px;
+          margin-left: auto;
+          margin-right: auto;
+        "
+      ></p>
+
+      <div
+        id="tx-details"
+        style="
+          display: none;
+          background: var(--divider);
+          padding: 20px;
+          margin-bottom: 2rem;
+          border: 1px solid var(--accent-blue);
+        "
+      >
+        <small
+          style="
+            display: block;
+            text-transform: uppercase;
+            color: var(--accent-blue);
+            margin-bottom: 5px;
+            font-size: 0.7rem;
+          "
+          >Tracking ID</small
+        >
+        <strong
+          id="ref-id"
+          style="font-family: monospace; font-size: 1.1rem"
+        ></strong>
+      </div>
+
+      <button
+        onclick="window.location.href='index.html'"
+        style="max-width: 250px"
+      >
+        Return to Gallery
+      </button>
+    </main>
+
+    <script src="js/theme.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get("status");
+        const lastTx = JSON.parse(localStorage.getItem("lastTx") || "{}");
+
+        const title = document.getElementById("status-title");
+        const msg = document.getElementById("status-msg");
+        const icon = document.getElementById("status-icon");
+        const refBox = document.getElementById("tx-details");
+        const refId = document.getElementById("ref-id");
+
+        if (status === "success") {
+          icon.innerHTML = "✔";
+          icon.style.color = "var(--cta)";
+          title.innerText = "Payment Successful";
+          msg.innerText =
+            "The transaction was processed. Your artwork selection is now being prepared for you.";
+          if (lastTx.tracking_id) {
+            refBox.style.display = "block";
+            refId.innerText = lastTx.tracking_id;
+          }
+        } else {
+          icon.innerHTML = "✘";
+          icon.style.color = "var(--accent-alt)";
+          title.innerText = "Payment Failed";
+          msg.innerText =
+            "We encountered an issue processing your payment. No funds were moved. Please try again or contact support.";
+        }
+      });
+    </script>
+  </body>
+</html>
