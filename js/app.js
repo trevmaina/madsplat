@@ -213,23 +213,29 @@ document.querySelectorAll(".admin-tab").forEach((button) => {
   });
 });
 
-/**
- * Admin-specific Deposit via Paystack
- */
 function adminDeposit() {
-  const amt = parseFloat(document.getElementById("admin-deposit-amount").value);
+  const amountInput = document.getElementById("admin-deposit-amount");
+  const currencyInput = document.getElementById("admin-currency");
+
+  const amt = parseFloat(amountInput.value);
+  const selectedCurrency = currencyInput.value;
 
   if (!amt || amt <= 0) {
-    return alert("Please enter a valid amount to deposit.");
+    return alert("Please enter a valid amount.");
   }
 
-  // Use your admin email for the transaction record
   const adminEmail = "admin@madsplat.com";
   const adminPhone = "254000000000";
 
-  // Trigger the Paystack popup
-  console.log(`Initiating admin deposit: KES ${amt}`);
-
-  // Reuse the existing PaymentService from your checkout logic
-  PaymentService.initiatePayment(amt, adminEmail, adminPhone);
+  if (typeof PaymentService !== "undefined") {
+    // Pass the selected currency to the service
+    PaymentService.initiatePayment(
+      amt,
+      adminEmail,
+      adminPhone,
+      selectedCurrency
+    );
+  } else {
+    alert("Error: Payment system (payment.js) not loaded.");
+  }
 }
