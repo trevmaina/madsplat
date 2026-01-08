@@ -224,8 +224,8 @@ function adminDeposit() {
     return alert("Please enter a valid amount.");
   }
 
-  const adminEmail = "admin@madsplat.com";
-  const adminPhone = "254000000000";
+  const adminEmail = "trevomaina@gmail.com";
+  const adminPhone = "254718009811";
 
   if (typeof PaymentService !== "undefined") {
     // Pass the selected currency to the service
